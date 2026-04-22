@@ -1,0 +1,173 @@
+import React, { useState } from 'react';
+import { 
+  LayoutDashboard, ClipboardList, Calendar, Users, 
+  MessageCircle, Info, Send, Search, Bell, Eye, EyeOff 
+} from 'lucide-react';
+
+export default function MegaSistema() {
+  const [abaAtiva, setAbaAtiva] = useState('painel');
+  const [filtroStatus, setFiltroStatus] = useState('Todos');
+  const [atividadeSelecionada, setAtividadeSelecionada] = useState(null);
+  const [abaModal, setAbaModal] = useState('chat'); // 'chat' ou 'status'
+
+  // Dados de Exemplo (Isso virá do seu Firebase depois)
+  const [tarefas] = useState([
+    { id: 1, titulo: "Licenciamento Fazenda Santa Rita", responsavel: "Otávio", status: "Pendentes", prazo: "25/04/2026" },
+    { id: 2, titulo: "Processo Bacabeira", responsavel: "Mariana", status: "Em Andamento", prazo: "30/04/2026" },
+    { id: 3, titulo: "Escritura Sítio Novo", responsavel: "Carlos", status: "Para Revisão", prazo: "22/04/2026" },
+  ]);
+
+  const filtradas = filtroStatus === 'Todos' ? tarefas : tarefas.filter(t => t.status === filtroStatus);
+
+  return (
+    <div className="flex h-screen bg-[#f5f5f4] font-sans overflow-hidden">
+      
+      {/* 1. ÁREA PRINCIPAL (ESQUERDA) */}
+      <div className="flex-1 flex flex-col overflow-y-auto p-8">
+        <header className="flex justify-between items-center mb-10">
+          <div>
+            <h2 className="text-3xl font-bold text-[#064e3b]">Seja bem-vindo, Otávio</h2>
+            <p className="text-gray-500 italic font-medium">Mega Advocacia - Gestão de Processos</p>
+          </div>
+          <div className="flex gap-4">
+            <button className="bg-white p-3 rounded-xl shadow-sm text-emerald-900 hover:bg-emerald-50 transition">
+              <Search size={20} />
+            </button>
+            <button className="bg-white p-3 rounded-xl shadow-sm text-emerald-900 hover:bg-emerald-50 transition">
+              <Bell size={20} />
+            </button>
+          </div>
+        </header>
+
+        {/* QUADROS DE RESUMO (INTUITIVOS) */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-10">
+          <StatusCard label="Pendentes" count={tarefas.filter(t => t.status === 'Pendentes').length} active={filtroStatus === 'Pendentes'} onClick={() => setFiltroStatus('Pendentes')} color="border-orange-500 text-orange-700" />
+          <StatusCard label="Em Andamento" count={tarefas.filter(t => t.status === 'Em Andamento').length} active={filtroStatus === 'Em Andamento'} onClick={() => setFiltroStatus('Em Andamento')} color="border-blue-500 text-blue-700" />
+          <StatusCard label="Para Revisão" count={tarefas.filter(t => t.status === 'Para Revisão').length} active={filtroStatus === 'Para Revisão'} onClick={() => setFiltroStatus('Para Revisão')} color="border-purple-500 text-purple-700" />
+          <StatusCard label="Concluídas" count={tarefas.filter(t => t.status === 'Concluídas').length} active={filtroStatus === 'Concluídas'} onClick={() => setFiltroStatus('Concluídas')} color="border-green-500 text-green-700" />
+          <StatusCard label="Total" count={tarefas.length} active={filtroStatus === 'Todos'} onClick={() => setFiltroStatus('Todos')} color="border-emerald-900 bg-emerald-900 text-white" />
+        </div>
+
+        {/* LISTA DE TAREFAS DINÂMICA */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden flex-1">
+          <div className="p-5 bg-[#064e3b] text-white flex justify-between items-center">
+            <h3 className="font-bold uppercase tracking-widest text-sm">Lista de Atividades: {filtroStatus}</h3>
+          </div>
+          <div className="overflow-y-auto max-h-[500px]">
+            {filtradas.map(tarefa => (
+              <div key={tarefa.id} className="p-6 border-b border-gray-100 flex items-center justify-between hover:bg-emerald-50/30 transition">
+                <div>
+                  <h4 className="text-xl font-bold text-emerald-950">{tarefa.titulo}</h4>
+                  <div className="flex gap-4 mt-1 text-sm text-gray-500 uppercase font-semibold">
+                    <span>👤 {tarefa.responsavel}</span>
+                    <span className="text-red-600 font-bold">📅 Vencimento: {tarefa.prazo}</span>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setAtividadeSelecionada(tarefa)}
+                  className="bg-[#064e3b] hover:bg-emerald-800 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-md transition"
+                >
+                  <MessageCircle size={18} /> ABRIR CHAT / STATUS
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 2. MENU LATERAL (DIREITO) */}
+      <aside className="w-80 bg-[#064e3b] text-white flex flex-col p-8 border-l border-emerald-800 shadow-2xl order-last">
+        <div className="mb-12 text-center border-b border-emerald-700 pb-6">
+          <h1 className="text-2xl font-black italic tracking-tighter text-[#f5f5f4]">MEGA ADVOCACIA</h1>
+          <p className="text-[10px] text-emerald-300 mt-1 uppercase tracking-[0.2em]">Operating System v1.0</p>
+        </div>
+
+        <nav className="space-y-4 flex-1">
+          <MenuBtn icon={<LayoutDashboard />} label="Painel" active={abaAtiva === 'painel'} onClick={() => setAbaAtiva('painel')} />
+          <MenuBtn icon={<ClipboardList />} label="Atividades" active={abaAtiva === 'atividades'} onClick={() => setAbaAtiva('atividades')} />
+          <MenuBtn icon={<Calendar />} label="Agenda" active={abaAtiva === 'agenda'} onClick={() => setAbaAtiva('agenda')} />
+          <MenuBtn icon={<Users />} label="Clientes" active={abaAtiva === 'clientes'} onClick={() => setAbaAtiva('clientes')} />
+          <MenuBtn icon={<Users />} label="Equipe" active={abaAtiva === 'equipe'} onClick={() => setAbaAtiva('equipe')} />
+        </nav>
+
+        <div className="mt-auto bg-emerald-900/50 p-4 rounded-xl text-center">
+          <p className="text-xs text-emerald-300 italic uppercase">Logado como Admin</p>
+          <button className="text-white font-bold hover:text-red-400 mt-2 transition">Sair do Sistema</button>
+        </div>
+      </aside>
+
+      {/* 3. MODAL DE CHAT E STATUS (POP-UP) */}
+      {atividadeSelecionada && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-[#f5f5f4] w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl">
+            {/* Cabeçalho do Modal */}
+            <div className="bg-[#064e3b] p-6 text-white flex justify-between items-center">
+              <div>
+                <h3 className="font-bold text-xl">{atividadeSelecionada.titulo}</h3>
+                <p className="text-emerald-300 text-xs uppercase">Responsável: {atividadeSelecionada.responsavel}</p>
+              </div>
+              <button onClick={() => setAtividadeSelecionada(null)} className="text-emerald-200 hover:text-white text-2xl">×</button>
+            </div>
+
+            {/* Abas Internas (Chat vs Status) */}
+            <div className="flex border-b bg-white">
+              <button 
+                onClick={() => setAbaModal('chat')}
+                className={`flex-1 p-4 font-bold flex items-center justify-center gap-2 ${abaModal === 'chat' ? 'border-b-4 border-emerald-700 text-emerald-900' : 'text-gray-400'}`}
+              >
+                <MessageCircle size={18} /> CHAT DA TAREFA
+              </button>
+              <button 
+                onClick={() => setAbaModal('status')}
+                className={`flex-1 p-4 font-bold flex items-center justify-center gap-2 ${abaModal === 'status' ? 'border-b-4 border-emerald-700 text-emerald-900' : 'text-gray-400'}`}
+              >
+                <Info size={18} /> ATUALIZAÇÕES/STATUS
+              </button>
+            </div>
+
+            {/* Conteúdo do Chat/Status */}
+            <div className="h-[400px] p-6 overflow-y-auto flex flex-col gap-4">
+              {abaModal === 'chat' ? (
+                <>
+                  <Msg nome="Otávio" texto="Preciso de um retorno sobre o boleto da taxa." eu />
+                  <Msg nome="Secretaria" texto="Já estamos emitindo, Otávio. Envio em 10 min." />
+                </>
+              ) : (
+                <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100 italic text-emerald-800 text-sm">
+                  🔹 22/04/2026: Documento enviado para a fazenda via protocolo digital.
+                </div>
+              )}
+            </div>
+
+            {/* Input de Mensagem */}
+            <div className="p-4 bg-white border-t flex gap-2">
+              <input type="text" placeholder="Escreva aqui..." className="flex-1 bg-gray-100 rounded-xl px-4 py-3 outline-none focus:ring-2 ring-emerald-700" />
+              <button className="bg-[#064e3b] text-white p-3 rounded-xl hover:bg-emerald-800"><Send size={20} /></button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Componentes Auxiliares
+const StatusCard = ({ label, count, active, onClick, color }) => (
+  <button onClick={onClick} className={`p-4 rounded-2xl border shadow-sm transition-all text-left flex flex-col gap-1 ${active ? 'ring-2 ring-emerald-400 scale-105' : 'bg-white hover:bg-gray-50'} ${color}`}>
+    <span className="text-[10px] uppercase font-black opacity-80">{label}</span>
+    <span className="text-3xl font-black tracking-tighter">{count < 10 ? `0${count}` : count}</span>
+  </button>
+);
+
+const MenuBtn = ({ icon, label, active, onClick }) => (
+  <button onClick={onClick} className={`flex items-center gap-4 w-full p-3 rounded-xl transition-all ${active ? 'bg-[#f5f5f4] text-[#064e3b] shadow-lg translate-x-2 font-bold' : 'text-emerald-200 hover:text-white hover:bg-emerald-800/50'}`}>
+    {icon} <span>{label}</span>
+  </button>
+);
+
+const Msg = ({ nome, texto, eu }) => (
+  <div className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm ${eu ? 'self-end bg-[#064e3b] text-white rounded-tr-none' : 'self-start bg-white border rounded-tl-none'}`}>
+    <p className={`font-black text-[10px] mb-1 ${eu ? 'text-emerald-300' : 'text-emerald-700 uppercase'}`}>{nome}</p>
+    <p>{texto}</p>
+  </div>
+);
